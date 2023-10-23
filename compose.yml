@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-container
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      # nginx默认配置文件
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ${WEB_ROOT_PATH}:/var/www/
+      - ${NGINX_LOG_PATH}:/var/log/nginx/
+    depends_on:
+      - php
+      - mariadb
+    networks:
+      - backend
+  
+  # certbot:
+  #   image: certbot/certbot
+  #   container_name: certbot
+  #   volumes:
+  #     - ${WEB_ROOT_PATH}/certbot/:/var/www/certbot/:rw
+  #     - ./nginx/ssl/:/etc/letsencrypt/:rw
+  #   networks:
+  #     - backend
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-container
+    ports:
+      - ${MYSQL_PORT}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TIMEZONE}
+    volumes:
+      # mysql默认配置文件
+      - ${MYSQL_CONF_PATH}:/etc/mysql/conf.d/docker.cnf
+      # 数据文件
+      - ${MYSQL_DATA_PATH}:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    networks:
+      - backend
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    environment:
+      - TZ=${TIMEZONE}
+    command: redis-server /etc/redis/redis.conf
+    restart: always
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - ${REDIS_DATA_PATH}:/data
+      - ${REDIS_CONF_PATH}:/etc/redis/redis.conf
+    networks:
+      - backend
+
+  php:
+    image: php:8.2-fpm
+    container_name: php-container
+    restart: always
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - "9081:9081"
+      - "8881:8881"
+    volumes:
+      # php 配置文件
+      - ./php/config/php.ini:/usr/local/etc/php/php.ini
+      - ./php/config/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php/config/php-fpm.d:/usr/local/etc/php-fpm.d
+      - ./id_rsa.pub:/root/.ssh/id_rsa.pub
+      - ./id_rsa:/root/.ssh/id_rsa
+      # 项目代码
+      - ${WEB_ROOT_PATH}:/var/www/
+      # php-fpm日志
+      - ./logs/php/:/var/log/php/
+      # 应用日志
+      - ./logs/app/:/data/log/
+    depends_on:
+      - mariadb
+      - redis
+    networks:
+      - backend
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   container_name: phpmyadmin-container
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - mariadb
+  #   networks:
+  #     - backend
+networks:
+  backend:
+    driver: bridge
+
+
