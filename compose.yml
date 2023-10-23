@@ -18,6 +18,10 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl
       - ${WEB_ROOT_PATH}:/var/www/
       - ${NGINX_LOG_PATH}:/var/log/nginx/
+    command: >
+      /bin/bash -c "chmod -R 755 /var/www && 
+                    chown -R www-data:www-data /var/www && 
+                    nginx -g 'daemon off;'"
     depends_on:
       - php
       - mariadb
