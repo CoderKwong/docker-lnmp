@@ -16,5 +16,6 @@ RUN docker-php-ext-install opcache fileinfo \
 # 下载Composer安装程序
 ENV COMPOSER_HOME /var/www/.composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN ls -alh /usr/local/bin
 
 WORKDIR /var/www
