@@ -1,6 +1,7 @@
 .idea
 /logs
 /data
+/www
 .env
 
 .DS_Store
