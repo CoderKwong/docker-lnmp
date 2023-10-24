@@ -4,7 +4,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: nginx-container
+    container_name: nginx
     environment:
       - TZ=${TIMEZONE}
     ports:
@@ -73,6 +73,13 @@ services:
   php:
     build:
       context: ./php
+      args:
+        - EXT_GD=true
+        - EXT_REDIS=true
+        - EXT_GRPC=false
+        - EXT_PROTOBUF=fals
+        - EXT_MEMCACHED=false
+        - EXT_SWOOLED=false
     container_name: php
     restart: always
     environment:
