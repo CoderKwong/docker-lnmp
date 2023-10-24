@@ -44,6 +44,9 @@ services:
       - ${MYSQL_PORT}:3306
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=database
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
       - TZ=${TIMEZONE}
     volumes:
       # mysql默认配置文件
